@@ -20,40 +20,19 @@ extension UIImage {
     }
     
 }
-//
-
-extension UIImage {
-    func getBrighter(pos: CGPoint) -> UIImage {
-        
-        let pixelData = self.cgImage!.dataProvider!.data
-        let data: UnsafePointer<UInt8> = CFDataGetBytePtr(pixelData)
-        
-        let pixelInfo: Int = ((Int(self.size.width) * Int(pos.y)) + Int(pos.x)) * 4
-        
-        let r = CGFloat(data[pixelInfo]) + 30
-        let g = CGFloat(data[pixelInfo+1]) + 30
-        let b = CGFloat(data[pixelInfo+2]) + 30
-        let a = CGFloat(data[pixelInfo+3])
-        
-        data[pixelInfo] = r
-        data[pixelInfo+1] = g
-        data[pixelInfo+2] = b
-        
-        return UIColor(red: r, green: g, blue: b, alpha: a)
-    }
-    
-}
 
 
 public func grabCut(_ img: UIImage) -> UIImage {
     let width = Int(img.size.width)
     let height = Int(img.size.height)
-////    for i in 0..<width {
+//    for i in 0..<width {
 //        for j in 0..<height {
-//            print(j, img.getPixelColor(pos: CGPoint(x:width/2,y:j)))
+//            print(i, j, img.getPixelColor(pos: CGPoint(x:i,y:j)))
 //        }
-////    }
-    return img
+//    }
+    let rgba = RGBAImage(image: img)!
+    let newimage = rgba.toUIImage()!
+    return newimage
 }
 
 class MyViewController : UIViewController {
@@ -72,3 +51,8 @@ class MyViewController : UIViewController {
 }
 // Present the view controller in the Live View window
 PlaygroundPage.current.liveView = MyViewController()
+
+
+
+
+
