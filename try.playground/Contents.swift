@@ -21,18 +21,33 @@ extension UIImage {
     
 }
 
+public func changeImg(_ rgbaimg: RGBAImage) -> RGBAImage {
+    var result : RGBAImage = RGBAImage(width: rgbaimg.width, height: rgbaimg.height)
+
+    for y in 0..<result.height {
+        for x in 0..<result.width {
+            let index = y * result.width + x
+            result.pixels[index] = rgbaimg.pixels[index]
+        }
+    }
+    let x = result.width/2
+    for j in 0..<result.height {
+        let index = j * result.width + x
+        result.pixels[index].R = 255
+        result.pixels[index].G = 255
+        result.pixels[index].B = 255
+    }
+    return result
+}
+
 
 public func grabCut(_ img: UIImage) -> UIImage {
     let width = Int(img.size.width)
     let height = Int(img.size.height)
-//    for i in 0..<width {
-//        for j in 0..<height {
-//            print(i, j, img.getPixelColor(pos: CGPoint(x:i,y:j)))
-//        }
-//    }
-    let rgba = RGBAImage(image: img)!
-    let newimage = rgba.toUIImage()!
-    return newimage
+    var rgba = RGBAImage(image: img)!
+    
+//    let newimage = changeImg(rgba).toUIImage()!
+    return img
 }
 
 class MyViewController : UIViewController {
