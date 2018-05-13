@@ -9,6 +9,34 @@
 import Foundation
 import UIKit
 
+public func rgb2luv(_ R: UInt8, _ G: UInt8, _ B: UInt8) -> (Double,Double,Double) {
+    let r = Double(R) / 255.0
+    let g = Double(G) / 255.0
+    let b = Double(B) / 255.0
+    let x = 0.412453 * r + 0.357580 * g + 0.180423 * b
+    let y = 0.212671 * r + 0.715160 * g + 0.072169 * b
+    let z = 0.019334 * r + 0.119193 * g + 0.950227 * b
+    var L = Double()
+    var u = Double()
+    var v = Double()
+    if (y > 0.008856) {
+        L = 116.0 * pow(y, 1.0 / 3.0) - 16.0
+    }
+    else {
+        L = 903.3 * y
+    }
+    let sum = x + 15 * y + 3 * z
+    if (sum != 0) {
+        u = 4 * x / sum
+        v = 9 * y / sum
+    }
+    else {
+        u = 4.0
+        v = 9.0 / 15.0
+    }
+    return (L, 13 * L * (u - 0.19784977571475), 13 * L * (v - 0.46834507665248))
+}
+
 public func distEuchilid(_ x: Point, _ y: Point) -> Double {
     let sum = (x.R-y.R)*(x.R-y.R) + (x.G-y.G)*(x.G-y.G) + (x.B-y.B)*(x.B-y.B)
     return sqrt(sum)
@@ -18,8 +46,8 @@ class Meanshift {
     var bandwidth = 8
     var width = Int()
     var height = Int()
-    let MIN_DISTANCE = 0.5
-    var MIN_DISTANCE_GROUP = 60
+    let MIN_DISTANCE = 1.0
+    var MIN_DISTANCE_GROUP = 40
     
     
     
@@ -29,6 +57,7 @@ class Meanshift {
     var newPoint = [[Point]]()
     var cateCounter = 0
     var gaussian = true
+    var luv = true
     var h2 = 128.0
     var imgmat: RGBAImage
     
@@ -47,7 +76,11 @@ class Meanshift {
             for j in 0..<width {
                 let index = i * width + j
                 let pixel = imgmat.pixels[index]
-                allPoints += [Point(Double(pixel.R), Double(pixel.G), Double(pixel.B), i, j)]
+                if !luv {allPoints += [Point(Double(pixel.R), Double(pixel.G), Double(pixel.B), i, j)]}
+                else {
+                    let tmp = rgb2luv(pixel.R, pixel.G, pixel.B)
+                    allPoints += [Point(tmp.0, tmp.1, tmp.2, i, j)]
+                }
             }
         }
         return imgmat
@@ -142,16 +175,40 @@ class Meanshift {
         print("\(cateCounter) Clusters")
     }
 
-    public func reconstructPic(with imgmat: RGBAImage) -> RGBAImage {
+    public func segmentPic(with imgmat: RGBAImage) -> RGBAImage {
         var result = imgmat.clone()
         for point in allPoints {
             let index = point.x * width + point.y
-//            print("!!!!!\(index)")
-            result.pixels[index].R = UInt8(cateCenter[point.cate].R)
-            result.pixels[index].G = UInt8(cateCenter[point.cate].G)
-            result.pixels[index].B = UInt8(cateCenter[point.cate].B)
+            let oridx = cateCenter[point.cate].x * width + cateCenter[point.cate].y
+            result.pixels[index].R = imgmat.pixels[oridx].R
+            result.pixels[index].G = imgmat.pixels[oridx].G
+            result.pixels[index].B = imgmat.pixels[oridx].B
         }
         return result
+    }
+    
+    public func reconstructPic(with imgmat: RGBAImage) -> RGBAImage {
+        var result = imgmat.clone()
+        var cateToRemove = Set<Int>()
+        for point in allPoints {
+            if point.x == 0 && point.y == width - 1 {
+                cateToRemove.insert(point.cate)
+                print("Remove Cate ID: \(point.cate)")
+            }
+        }
+        for point in allPoints {
+            let index = point.x * width + point.y
+            if cateToRemove.contains(point.cate) {
+                result.pixels[index].A = 0
+            }
+        }
+        return result
+    }
+    
+    public func adjust(_ imgsrc: UIImage, _ groupTolerance: Int) -> UIImage {
+        MIN_DISTANCE_GROUP = groupTolerance
+        self.clusterPoints()
+        return reconstructPic(with: imgmat).toUIImage()!
     }
     
     public func run(_ imgsrc: UIImage) -> UIImage {
@@ -159,12 +216,7 @@ class Meanshift {
         self.meanShift()
         self.clusterPoints()
         return reconstructPic(with: imgmat).toUIImage()!
-    }
-    
-    public func adjust(_ imgsrc: UIImage, _ groupTolerance: Int) -> UIImage {
-        MIN_DISTANCE_GROUP = groupTolerance
-        self.clusterPoints()
-        return reconstructPic(with: imgmat).toUIImage()!
+//      return segmentPic(with: imgmat).toUIImage()!
     }
     
 }

@@ -9,25 +9,37 @@
 import UIKit
 
 class ViewController: UIViewController {
-
+    
     @IBOutlet weak var image1: UIImageView!
     @IBOutlet weak var image2: UIImageView!
-    let pictures = ["pine", "fruit", "tower", "calendar", "icecream"]
+    let pictures = ["fruit", "icecream", "tower", "luxun"]
     var idx = 0
     let meanshift = Meanshift(3)
     
     @IBOutlet weak var gtlabel: UILabel!
     @IBOutlet weak var gtslider: UISlider!
-    
+    @IBOutlet weak var running: UIActivityIndicatorView!
     override func viewDidLoad() {
         super.viewDidLoad()
         image1.image = UIImage(named: pictures[idx])
     }
-    
     @IBAction func runAlgo(_ sender: UIButton) {
-        image2.image = meanshift.run(image1.image!)
-        gtlabel.isHidden = false
-        gtslider.isHidden = false
+        //        running.isHidden = false
+        DispatchQueue.main.async {
+            self.running.startAnimating()
+        }
+        var resultimg = UIImage()
+        DispatchQueue.global().async {
+            resultimg = self.meanshift.run(UIImage(named: self.pictures[self.idx])!)
+            DispatchQueue.main.async {
+                self.gtlabel.isHidden = false
+                self.gtslider.isHidden = false
+                self.image2.image = resultimg
+                self.running.stopAnimating()
+
+            }
+        }
+
     }
     
     @IBAction func switchPicture(_ sender: Any) {

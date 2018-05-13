@@ -44,7 +44,7 @@
                                 <rect key="frame" x="157" y="98" width="521" height="389"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             </imageView>
-                            <slider hidden="YES" opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="60" minValue="15" maxValue="120" translatesAutoresizingMaskIntoConstraints="NO" id="CSl-iZ-Rmd">
+                            <slider hidden="YES" opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="40" minValue="10" maxValue="100" translatesAutoresizingMaskIntoConstraints="NO" id="CSl-iZ-Rmd">
                                 <rect key="frame" x="458" y="992" width="161" height="30"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <connections>
@@ -58,6 +58,10 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" hidesWhenStopped="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="GQI-hQ-xCR">
+                                <rect key="frame" x="407" y="716" width="20" height="20"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            </activityIndicatorView>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
@@ -69,6 +73,7 @@
                         <outlet property="gtslider" destination="CSl-iZ-Rmd" id="ZmI-7h-1yP"/>
                         <outlet property="image1" destination="7UM-QO-hxn" id="zg3-Dc-DKD"/>
                         <outlet property="image2" destination="570-vo-ZT0" id="hSb-Vl-bkj"/>
+                        <outlet property="running" destination="GQI-hQ-xCR" id="v8h-gC-jGi"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>

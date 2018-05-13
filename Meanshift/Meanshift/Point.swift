@@ -8,17 +8,12 @@ public struct Point {
     public var y: Int = 0//0..<Width
     public var cate: Int = -1
     public var shifting: Bool = true
+    public var luv = true
     
     public init(_ r: Double, _ g: Double, _ b: Double, _ x: Int, _ y: Int) {
-        R = r<255 ? r : 255
-        G = g<255 ? g : 255
-        B = b<255 ? b : 255
-        
-        R = r>0 ? r : 0
-        G = g>0 ? g : 0
-        B = b>0 ? b : 0
-        
-        
+        R = r
+        G = g
+        B = b
         self.x = x
         self.y = y
     }
