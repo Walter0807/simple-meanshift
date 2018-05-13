@@ -47,7 +47,7 @@ class Meanshift {
     var width = Int()
     var height = Int()
     let MIN_DISTANCE = 1.0
-    var MIN_DISTANCE_GROUP = 40
+    var MIN_DISTANCE_GROUP = 60
     
     
     
@@ -224,14 +224,15 @@ class Meanshift {
         MIN_DISTANCE_GROUP = groupTolerance
         self.clusterPoints()
         return reconstructPic(with: imgmat).toUIImage()!
+//        return segmentPic(with: imgmat).toUIImage()!
     }
     
     public func run(_ imgsrc: UIImage) -> UIImage {
         imgmat = self.process(imgsrc)
         self.meanShift()
         self.clusterPoints()
-        return reconstructPic(with: imgmat).toUIImage()!
-//      return segmentPic(with: imgmat).toUIImage()!
+          return reconstructPic(with: imgmat).toUIImage()!
+//        return segmentPic(with: imgmat).toUIImage()!
     }
     
 }
