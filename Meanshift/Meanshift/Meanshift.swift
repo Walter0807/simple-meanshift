@@ -18,20 +18,28 @@ class Meanshift {
     var bandwidth = 8
     var width = Int()
     var height = Int()
-    let MIN_DISTANCE = 1.0
-    let MIN_DISTANCE_GROUP = 40.0
+    let MIN_DISTANCE = 0.5
+    var MIN_DISTANCE_GROUP = 60
+    
+    
+    
     var allPoints = [Point]()
     var easyFind = [[Int]]()
     var cateCenter = [Point]()
     var newPoint = [[Point]]()
     var cateCounter = 0
-
+    var gaussian = true
+    var h2 = 128.0
+    var imgmat: RGBAImage
     
     public init (_ bw: Int) {
         bandwidth = bw
+        h2 = Double(bandwidth * bandwidth * 2)
+        imgmat = RGBAImage(width: 1, height: 1)
     }
     
     public func process(_ imgsrc: UIImage) -> RGBAImage {
+        allPoints = []
         let imgmat = RGBAImage(image: imgsrc)!
         width = Int(imgmat.width)
         height = Int(imgmat.height)
@@ -50,27 +58,41 @@ class Meanshift {
         var totR = 0.0
         var totG = 0.0
         var totB = 0.0
+        var totsc = 0.0
         let l = (Int(p.R) - (bandwidth + 1) > 0) ? Int(p.R) - (bandwidth + 1) : 0
         let r = (Int(p.R) + (bandwidth + 1) < 255) ? Int(p.R) + (bandwidth + 1) : 255
         for i in l...r {
             if !easyFind[i].isEmpty{
                 for j in easyFind[i] {
                     let point = allPoints[j]
-                    if distEuchilid(point, p) < Double(bandwidth) {
+                    let dist = distEuchilid(point, p)
+                    if dist < Double(bandwidth) {
                         cnt += 1.0
-                        totR += point.R
-                        totG += point.G
-                        totB += point.B
+                        if !gaussian {
+                            totR += point.R
+                            totG += point.G
+                            totB += point.B
+                        }
+                        else {
+                            let sc = exp(-dist * dist / h2)
+                            totR += sc * point.R
+                            totG += sc * point.G
+                            totB += sc * point.B
+                            totsc += sc
+                        }
                     }
                 }
             }
         }
-        return Point(totR/cnt, totG/cnt, totB/cnt, p.x, p.y)
+        if !gaussian {return Point(totR/cnt, totG/cnt, totB/cnt, p.x, p.y)}
+        else {
+            return Point(totR/totsc, totG/totsc, totB/totsc, p.x, p.y)
+        }
     }
     
     public func meanShift() {
         var shiftingPointNumbers = allPoints.count
-        easyFind = Array(repeating: [], count: 256)
+        easyFind = Array(repeating: [], count: 258)
         newPoint = Array(repeating: Array(repeating: Point(), count: width), count: height)
         
         for idx in allPoints.indices {
@@ -83,13 +105,14 @@ class Meanshift {
                 if !point.shifting {continue}
                 var pointShifted = pointShift(point)
                 let dist = distEuchilid(point, pointShifted)
+//                print("shifted \(dist)")
                 if  dist < MIN_DISTANCE {
                     pointShifted.shifting = false
                     shiftingPointNumbers -= 1
                 }
                 newPoint[point.x][point.y] = pointShifted
             }
-            easyFind = Array(repeating: [], count: 256)
+            easyFind = Array(repeating: [], count: 258)
             for idx in allPoints.indices {
                 allPoints[idx] = newPoint[allPoints[idx].x][allPoints[idx].y]
                 easyFind[Int(allPoints[idx].R)] += [idx]
@@ -99,11 +122,13 @@ class Meanshift {
     
     
     public func clusterPoints() {
+        cateCenter = []
+        cateCounter = 0
         for idx in allPoints.indices {
 //            print(idx, cateCounter)
             var newCate = true
             for cc in cateCenter {
-                if distEuchilid(allPoints[idx], cc) < MIN_DISTANCE_GROUP {
+                if distEuchilid(allPoints[idx], cc) < Double(MIN_DISTANCE_GROUP) {
                     newCate = false
                     allPoints[idx].cate = cc.cate
                 }
@@ -130,8 +155,14 @@ class Meanshift {
     }
     
     public func run(_ imgsrc: UIImage) -> UIImage {
-        let imgmat = self.process(imgsrc)
+        imgmat = self.process(imgsrc)
         self.meanShift()
+        self.clusterPoints()
+        return reconstructPic(with: imgmat).toUIImage()!
+    }
+    
+    public func adjust(_ imgsrc: UIImage, _ groupTolerance: Int) -> UIImage {
+        MIN_DISTANCE_GROUP = groupTolerance
         self.clusterPoints()
         return reconstructPic(with: imgmat).toUIImage()!
     }
