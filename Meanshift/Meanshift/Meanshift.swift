@@ -190,18 +190,33 @@ class Meanshift {
     public func reconstructPic(with imgmat: RGBAImage) -> RGBAImage {
         var result = imgmat.clone()
         var cateToRemove = Set<Int>()
+        var cateid = Array(repeating: Array(repeating: Int(), count: width), count: height)
         for point in allPoints {
             if point.x == 0 && point.y == width - 1 {
                 cateToRemove.insert(point.cate)
                 print("Remove Cate ID: \(point.cate)")
             }
+            cateid[point.x][point.y] = point.cate
         }
-        for point in allPoints {
-            let index = point.x * width + point.y
-            if cateToRemove.contains(point.cate) {
-                result.pixels[index].A = 0
+        
+        for i in 0..<height {
+            for j in 0..<width {
+                let index = i * width + j
+                if cateToRemove.contains(cateid[i][j]) {
+                    result.pixels[index].A = 0
+                }
+                else {
+                    var cnt = 0
+                    if i+1<height && cateToRemove.contains(cateid[i+1][j]) {cnt += 1}
+                    if i-1>0 && cateToRemove.contains(cateid[i-1][j]) {cnt += 1}
+                    if j-1>0 && cateToRemove.contains(cateid[i][j-1]) {cnt += 1}
+                    if j+1<width && cateToRemove.contains(cateid[i][j+1]) {cnt += 1}
+                    if cnt>3 {cnt = 3}
+                    result.pixels[index].A = UInt8(255 - 83 * cnt)
+                }
             }
         }
+        
         return result
     }
     

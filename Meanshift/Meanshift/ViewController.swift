@@ -12,7 +12,7 @@ class ViewController: UIViewController {
     
     @IBOutlet weak var image1: UIImageView!
     @IBOutlet weak var image2: UIImageView!
-    let pictures = ["fruit", "icecream", "tower", "luxun"]
+    let pictures = ["fruit", "icecream", "tower", "luxun", "yaoming1", "yaoming2"]
     var idx = 0
     let meanshift = Meanshift(3)
     
