@@ -13,8 +13,8 @@ The task is to implement a non-deep(traditional) method to a computer vision pro
 
 - Optimizations
 
-  - Kernel function comparison
-  - Color space comparison
+  - Kernel function optimization
+  - Color space optimization
 
   ![](img/Luv.png)
 
